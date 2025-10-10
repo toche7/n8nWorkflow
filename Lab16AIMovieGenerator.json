@@ -1,0 +1,589 @@
+{
+  "name": "Lab16AIMovieGenerator",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        960,
+        -896
+      ],
+      "id": "7eb4f751-cb05-4140-9b47-70ac74944653",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.title }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a story creator.   Create the story from the give topics.   Translate to Thai Version of the story."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1408,
+        -896
+      ],
+      "id": "d6af2c67-f4d3-434f-aced-88898abfe672",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1408,
+        -672
+      ],
+      "id": "97291d2f-b62a-409b-abfb-254e871eb7d4",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "2yzrpEEQIaQeHBWu",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5b45bdb3-1024-4a8e-989d-f8525088a0e2",
+              "name": "title",
+              "value": "funny bull terrier and  furry cat",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1184,
+        -896
+      ],
+      "id": "a6995632-990d-4319-854e-92b0063288ad",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Basic LLM Chain').item.json.text }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a Scene Creator.\nYour task is to convert a story into a sequence of scenes that can be used for AI video generation.\nEach scene must describe what happens clearly and keep all characters visually and emotionally consistent across every scene.\nThe goal is to make the story flow smoothly from start to finish when turned into video.\nGuidelines:\nDivide the story into logical scenes that cover the full narrative.\nFor each scene, describe:\nScene title or number\nSetting or location (where it happens)\nTime or atmosphere (morning, night, mood, lighting, etc.)\nCharacter descriptions (appearance, clothing, personality — must stay consistent)\nActions or short dialogues that show what happens\nVisual style or mood (for example: cinematic, anime, realistic, watercolor, etc.)\nUse the same appearance and traits for each character across all scenes.\nWrite simple and vivid descriptions in English or bilingual English–Thai.\nFocus on clear scene structure, not full dialogue scripts."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1152,
+        -496
+      ],
+      "id": "07fec1b7-1f6e-40eb-916a-11661fefad85",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        -272
+      ],
+      "id": "7420d24c-eaa3-45bf-bedb-6a78fc9babb3",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "2yzrpEEQIaQeHBWu",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"scenes\": [ {\"sceneNumber\":\"number\", \"scenetitle\": \"scenetitle\", \"sencedetail\":\"California\"}]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1296,
+        -272
+      ],
+      "id": "f122e2c4-e176-4ac1-acc4-9492a846d23e",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.scenes",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1504,
+        -496
+      ],
+      "id": "f53c1269-df85-4478-9fa2-1040a6e7b478",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1952,
+        -496
+      ],
+      "id": "b50b159f-6ac0-417b-8110-a72beca5fdf9",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "name": "=Scene{{ $('Loop Over Items').item.json.sceneNumber }}:{{ $('Loop Over Items').item.json.scenetitle }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1jfXPh0TU8tHtmN24cD42cOWw9vR-8lVi",
+          "mode": "list",
+          "cachedResultName": "TestN8N",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1jfXPh0TU8tHtmN24cD42cOWw9vR-8lVi"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2624,
+        -480
+      ],
+      "id": "a5d532e1-acc0-4433-a5f9-663fb254672c",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Yc85rGiAGkSlFwJ4",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2400,
+        -480
+      ],
+      "id": "bc6f535d-523a-4905-a117-6a0d12e837d7",
+      "name": "Wait",
+      "webhookId": "0a551be3-ee93-4760-b25b-053949aec5b3"
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "modelId": {
+          "__rl": true,
+          "value": "models/veo-3.0-generate-preview",
+          "mode": "list",
+          "cachedResultName": "models/veo-3.0-generate-preview"
+        },
+        "prompt": "={{ $json.sencedetail }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        2176,
+        -480
+      ],
+      "id": "5b320267-b093-4d21-8eac-290c80566f31",
+      "name": "Generate a video1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "W9N3o3VZan2vVnSL",
+          "name": "Google Gemini(PaLM) Api PayAccount"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "eKw3MuHbynOL39AW",
+          "mode": "list",
+          "cachedResultName": "images",
+          "cachedResultUrl": "/projects/OJ0v4N7vObNagq8n/datatables/eKw3MuHbynOL39AW"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "link": "={{ $json.webContentLink }}",
+            "fileID": "={{ $json.id }}",
+            "filename": "={{ $json.originalFilename }}"
+          },
+          "matchingColumns": [
+            "link"
+          ],
+          "schema": [
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "fileID",
+              "displayName": "fileID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "filename",
+              "displayName": "filename",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        2176,
+        -688
+      ],
+      "id": "10909b66-e47b-49e4-b25e-7f4794e8b029",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "fromEmail": "mirf.mv@gmail.com",
+        "toEmail": "akesamanchuen@gmail.com",
+        "subject": "Approve Request",
+        "message": "={{ $json.text }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1760,
+        -976
+      ],
+      "id": "0ca93f55-6483-469a-aefe-9507606c1854",
+      "name": "Send email",
+      "webhookId": "e73fb335-beda-42f0-a6c4-d88f90cf0776",
+      "credentials": {
+        "smtp": {
+          "id": "AWdtUJl5md403pqc",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d45fd8a6-75b9-4d5d-88ad-e6cef169ecd5",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1984,
+        -896
+      ],
+      "id": "cad39f3a-55c1-4620-8c76-e6d4593af3b1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "maxItems": 3
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        1728,
+        -496
+      ],
+      "id": "e8c078c8-9552-4341-978c-474a04fd069a",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "content": "## AI Movie Generator",
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2352,
+        -896
+      ],
+      "typeVersion": 1,
+      "id": "53043805-a391-4253-8e3a-f8738cdc21a9",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Generate a video1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate a video1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row": {
+      "main": [
+        []
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c8e8e9fa-c20a-4057-bc37-2857d106887a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5c1488d671ebdf21efe1b8d850ccd320c7b411c7d1735cf887991d1f2bda941"
+  },
+  "id": "Qai7iK54mYUTAzFQ",
+  "tags": []
+}

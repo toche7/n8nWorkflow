@@ -1,0 +1,276 @@
+{
+  "name": "Lab15NewsPostFacebook",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        0
+      ],
+      "id": "8278ded4-533a-41ed-b165-f8ca609c9faf",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "https://magazine.sebastianraschka.com/feed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        0
+      ],
+      "id": "72d8ce61-1594-40ff-877d-4977f90c6e7c",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "maxItems": 2
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        192,
+        0
+      ],
+      "id": "850d7854-f466-4d02-9dd1-b327b1bcd3d8",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Title : {{ $json.title }}\nBody : {{ $json[\"content:encoded\"] }}\nlink:{{ $json.link }}\npubDate:{{ $json.pubDate }}\n\n\n\n",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are the news translator who convert any language to Thai for posting to Facebook.    \nYou will summarize news to as short news within 500-600 English words . \nThen translate the title and the summary to Thai to fit with Facebook post.  \nYou can use 🔹bullet points, or ✅emojis to make it simple to read.\nDon't use markdown syntax. Facebook not support markdown.\nYou will construction to output as JSON which consists of   title, bodyThai, imageUrl, Source, Datetime."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        400,
+        0
+      ],
+      "id": "e9523edf-59b7-4114-8d85-19a91c7ee587",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        400,
+        208
+      ],
+      "id": "270de196-0fb0-42fe-9f41-4a80f22ee06d",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "2yzrpEEQIaQeHBWu",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"title\": \"AI news\",\n\t\"body\": \"ข่าว AI\",\n   \"imageUrl\": \"https://xxx/xxx/x\",\n\"Source\":\"https://magazine.sebastianraschka.com/p/understanding-4-main-approaches-to-llm-evaluation-from-scratch\",\n\"Datetime\":\"2025-10-09T00:00:00Z\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        208
+      ],
+      "id": "6b5e44f7-5c47-4652-89ff-812a34805505",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        800,
+        0
+      ],
+      "id": "7a1ce3ac-344b-4cf9-9b51-ba501b7f0d94",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "me",
+        "edge": "photos",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "caption",
+                "value": "={{ $json.output.title }}\n{{ $json.output.body }}\n\n\n{{ $json.output.Source }}\n\n{{ $json.output.Datetime }}"
+              },
+              {
+                "name": "url",
+                "value": "={{ $json.output.imageUrl }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        16
+      ],
+      "id": "76cab7c7-fdb3-4ade-b68a-68eaff9c9b46",
+      "name": "Facebook Graph API",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "oGdYkN84feKIrY1K",
+          "name": "Facebook Graph Post"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        16
+      ],
+      "id": "e866d885-25dc-45e0-b87e-caa788d3b991",
+      "name": "Wait",
+      "webhookId": "d925a069-d18e-4e33-87d3-7533cd3130ce"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Facebook Graph API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook Graph API": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "26d5f34e-6e24-487b-9cc7-97c7da9659a5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5c1488d671ebdf21efe1b8d850ccd320c7b411c7d1735cf887991d1f2bda941"
+  },
+  "id": "NAvyBZdhwNUzcYij",
+  "tags": []
+}
