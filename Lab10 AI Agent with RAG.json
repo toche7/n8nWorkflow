@@ -1,0 +1,289 @@
+{
+  "name": "Lab10 AI Agent with RAG",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "File",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "file",
+              "fieldType": "file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fe139ec2-1392-48b2-90a3-31163d5c982f",
+      "name": "On form submission",
+      "webhookId": "707c9c4f-b284-431b-95ee-6b2186ed38cf"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "muscholarship",
+          "mode": "list",
+          "cachedResultName": "muscholarship"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "70323dc2-083b-4e3c-bf6b-4f32f75bf2bb",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "lTDPekMQ6aB7Mu6a",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        128,
+        224
+      ],
+      "id": "c63310a8-f7ac-4e25-bf5a-3cbb7faf0ab1",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "8nG5IDqh5NrMyg9S",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        256,
+        224
+      ],
+      "id": "90cb0ec6-3e9a-41a5-9c42-7152d3699b76",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        112,
+        544
+      ],
+      "id": "f754c76d-095c-4b18-96da-430215cc27d4",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -112,
+        544
+      ],
+      "id": "230c7fd5-ef16-479c-96c7-acb683b3f0dc",
+      "name": "When chat message received",
+      "webhookId": "ba6a19f1-5ac6-4b81-8311-48866dc13d34"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        752
+      ],
+      "id": "e8219633-bfb6-4ea1-a6f6-12e203773d5b",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "2yzrpEEQIaQeHBWu",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        128,
+        752
+      ],
+      "id": "bf41fd63-5dd3-48a3-a44c-cc9628b976b6",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "mu scholarship data",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "scholarship",
+          "mode": "list",
+          "cachedResultName": "scholarship"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        752
+      ],
+      "id": "e10d9607-d14c-447d-980d-4cf4ddcbb316",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "lTDPekMQ6aB7Mu6a",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        320,
+        896
+      ],
+      "id": "b80e1a6a-34b1-4ebc-b5d6-167d77a1fc1e",
+      "name": "Embeddings Google Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "8nG5IDqh5NrMyg9S",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "adf15b97-c13c-4115-92ff-946d88ca6a7b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5c1488d671ebdf21efe1b8d850ccd320c7b411c7d1735cf887991d1f2bda941"
+  },
+  "id": "QMw73sOQN1TPxaI1",
+  "tags": []
+}

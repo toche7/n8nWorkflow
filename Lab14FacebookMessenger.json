@@ -1,0 +1,176 @@
+{
+  "name": "Lab14FacebookMessenger",
+  "nodes": [
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "path": "985e66cc-8ae8-4b76-9498-049917699f24",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        32
+      ],
+      "id": "72300868-6e3d-465d-801e-58ed12370dda",
+      "name": "Webhook",
+      "webhookId": "985e66cc-8ae8-4b76-9498-049917699f24"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{$json.query['hub.challenge']}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        224,
+        -96
+      ],
+      "id": "cc79d732-62ca-47b9-b130-f0eb624c3aad",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.entry[0].messaging[0].message.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        96
+      ],
+      "id": "3bdc418c-38d7-4744-a2a0-4809136c7646",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        160,
+        320
+      ],
+      "id": "6b6d4181-78de-472e-bef4-f46262d167ea",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "2yzrpEEQIaQeHBWu",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.entry[0].messaging[0].sender.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        288,
+        320
+      ],
+      "id": "a540e1de-bd07-4343-9a70-e7038eec06f8",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "me",
+        "edge": "messages",
+        "options": {
+          "queryParametersJson": "={\n  \"recipient\": {\n    \"id\": \"{{ $('Webhook').item.json.body.entry[0].messaging[0].sender.id }}\"\n  },\n  \"message\": {\n    \"text\": \"AI:{{ $json.output.replace(/\\n/g,'\\\\n') \n                  .replace(/<\\/?[^>]+(>|$)/g, '')     \n                  .replace(/[*_`~]/g, '')            \n                  .replace(/[\"]/g, '\\\\\"')            \n                  .slice(0, 1900)  }}\"\n\n  },\n  \"messaging_type\": \"RESPONSE\"\n} \n\n"
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        560,
+        96
+      ],
+      "id": "ead546c3-7064-4b4e-8bae-e666a8eb6515",
+      "name": "Facebook Graph API",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "uHQoAtoloXYY7X7C",
+          "name": "Facebook Graph Namdokmai"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Facebook Graph API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "79d7d3bb-b01c-4733-b1eb-eb2c34e87258",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5c1488d671ebdf21efe1b8d850ccd320c7b411c7d1735cf887991d1f2bda941"
+  },
+  "id": "Da5rNVhWxGmbnBof",
+  "tags": []
+}

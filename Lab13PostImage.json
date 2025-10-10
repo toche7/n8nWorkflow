@@ -1,0 +1,220 @@
+{
+  "name": "Lab13PostImage",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -272,
+        0
+      ],
+      "id": "e1942725-3701-492c-ab65-c1b6116b116d",
+      "name": "When chat message received",
+      "webhookId": "cfcac015-d16c-4562-9afe-dbe685a76e78"
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a content creator specializing in motivational storytelling for Facebook posts.\n\nYour job is to:\n1. Write an inspiring, easy-to-read motivational story in English.\n2. Translate the same story into **Thai**, making sure it flows naturally and keeps the inspirational tone.\n3. Format the story for Facebook with **short lines**, clear line breaks and space (each sentence or phrase should be a separate line).\n4. Finally, create a **short image generation prompt** based on the story that captures the visual essence of the motivation."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        0
+      ],
+      "id": "8df8122c-a7f1-4db7-a36c-8c83820fdeeb",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        224
+      ],
+      "id": "b833b3bd-381b-4442-b29f-72675535cdec",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        224
+      ],
+      "id": "4fc94914-96ad-440c-a108-7301f76ffe16",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "CIhDkHqyDAzqWzcd",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"Motivational Story Schema\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"story_th\": {\n      \"type\": \"string\",\n      \"description\": \"เรื่องราวสร้างแรงบันดาลใจ (ภาษาไทย)\"\n    },\n    \"story_en\": {\n      \"type\": \"string\",\n      \"description\": \"Motivational story in English\"\n    },\n    \"image_prompt\": {\n      \"type\": \"string\",\n      \"description\": \"Prompt สำหรับสร้างภาพจากเนื้อหา\"\n    }\n  },\n  \"required\": [\"story_th\", \"story_en\", \"image_prompt\"],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        224
+      ],
+      "id": "13f635c5-e553-4305-b319-9ab2ad663c55",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-image-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-image-preview (Nano Banana)"
+        },
+        "prompt": "={{ $json.output.image_prompt }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        352,
+        0
+      ],
+      "id": "b47a3726-2419-46de-9603-3e66254bc564",
+      "name": "Generate an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "W9N3o3VZan2vVnSL",
+          "name": "Google Gemini(PaLM) Api PayAccount"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "me",
+        "edge": "photos",
+        "sendBinaryData": true,
+        "binaryPropertyName": "data",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "message",
+                "value": "={{ $('AI Agent').item.json.output.story_th }}\n=====\n{{ $('AI Agent').item.json.output.story_en }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        576,
+        0
+      ],
+      "id": "74dd67f2-f05e-40e5-8868-d412c9f364f9",
+      "name": "Facebook Graph API",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "oGdYkN84feKIrY1K",
+          "name": "Facebook Graph Post"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Facebook Graph API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "83ccec75-9ddb-4217-8715-f3b91d1a9219",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5c1488d671ebdf21efe1b8d850ccd320c7b411c7d1735cf887991d1f2bda941"
+  },
+  "id": "W6AomIeYXq6I2jqB",
+  "tags": []
+}

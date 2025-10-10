@@ -1,0 +1,200 @@
+{
+  "name": "Lab11LineChatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "a661744d-64ec-4e5a-a52f-d371b00f355c",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        0
+      ],
+      "id": "93ea16b9-70ac-455c-8ee2-7f55b3ace15c",
+      "name": "Webhook",
+      "webhookId": "a661744d-64ec-4e5a-a52f-d371b00f355c"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.events[0].message.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        0
+      ],
+      "id": "23a1cb43-88b7-47de-94f7-9c53eb4441a8",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        160,
+        240
+      ],
+      "id": "2de55cd2-c3cf-44fe-8827-438cc072df91",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "2yzrpEEQIaQeHBWu",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.events[0].source.userId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        288,
+        240
+      ],
+      "id": "82c9939a-3762-4f70-b02b-e50f38de41ad",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"replyToken\": $('Webhook').item.json.body.events[0].replyToken,\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": $json.output\n    }\n  ]\n} \n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        544,
+        0
+      ],
+      "id": "f93fa530-629a-430e-b3f9-aa6cba1ee948",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "zYJfXp1CxH5ik67O",
+          "name": "Bearer Auth account"
+        },
+        "httpHeaderAuth": {
+          "id": "MdYXTcvh7uSTo6FP",
+          "name": "Line Header Authentication"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer  $KEY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"replyToken\": $('Webhook').item.json.body.events[0].replyToken,\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": $json.output\n    }\n  ]\n} \n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        544,
+        224
+      ],
+      "id": "3c629930-3e2a-411e-ac05-05e1a75890c6",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "content": "## Line Credential Config\n\nUse this config to prevent show the credential. ",
+        "height": 272,
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        480,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "a3f2f432-805d-4696-90ef-cd39d3025cc7",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3fcb1f0d-c575-4a05-a21f-242d8e38f29f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5c1488d671ebdf21efe1b8d850ccd320c7b411c7d1735cf887991d1f2bda941"
+  },
+  "id": "dKGithbxJ1vksqPd",
+  "tags": []
+}
