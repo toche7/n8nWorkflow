@@ -1,0 +1,448 @@
+{
+  "name": "Lab17 Auto Feed News to Facebook",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        416,
+        672
+      ],
+      "id": "eb4e147c-0fbe-4281-80d7-de43022b4d9e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        800,
+        32
+      ],
+      "id": "05774931-7d0c-45ee-9d8c-a9d52d5b9994",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Title : {{ $json.title }}\nBody : {{ $json.content }}\nlink:{{ $json.link }}\npubDate:{{ $json.pubDate }}\n\n\n\n",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are the news translator who converts any language to Thai for Facebook posting.  \nYour task:  \n1. Summarize the given news article into a concise English summary of 500–600 words.  \n2. Then translate the title and summary into Thai, making it natural and engaging for Facebook audiences.  \n3. The Thai version should be written in short, simple sentences using 🔹bullet points or ✅emojis to make it easy to read.  \n4. Do not use Markdown syntax. Facebook does not support Markdown.  \n5. Construct the final output strictly in JSON format with the following fields:\n\n{\n  \"title\": \"translated Thai title\",\n  \"body\": \"translated Thai summary text\",\n  \"imageUrl\": \"image URL or null if not available\",\n  \"source\": \"original source link\",\n  \"datetime\": \"ISO 8601 datetime\"\n}\n\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1056,
+        32
+      ],
+      "id": "e83e8fe4-ab15-4f46-8d58-bf04980019c7",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        240
+      ],
+      "id": "e40ecd7a-500d-4873-b3ce-8712ea8cb271",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "2yzrpEEQIaQeHBWu",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"$schema\": \"https://json-schema.org/draft/2020-12/schema\",\n  \"title\": \"AI News Schema\",\n  \"type\": \"object\",\n  \"properties\": {\n    \"title\": {\n      \"type\": \"string\",\n      \"description\": \"หัวข้อข่าว AI\"\n    },\n    \"body\": {\n      \"type\": \"string\",\n      \"description\": \"เนื้อหาข่าวหรือคำอธิบายสั้น ๆ\"\n    },\n    \"imageUrl\": {\n      \"type\": [\"string\", \"null\"],\n      \"format\": \"uri\",\n      \"description\": \"ลิงก์ภาพประกอบข่าว (อาจไม่มี)\"\n    },\n    \"source\": {\n      \"type\": \"string\",\n      \"format\": \"uri\",\n      \"description\": \"แหล่งที่มาของข่าว\"\n    },\n    \"datetime\": {\n      \"type\": \"string\",\n      \"format\": \"date-time\",\n      \"description\": \"วันและเวลาที่เผยแพร่ข่าวในรูปแบบ ISO 8601\"\n    }\n  },\n  \"required\": [\"title\", \"body\", \"source\", \"datetime\"],\n  \"additionalProperties\": false\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1184,
+        240
+      ],
+      "id": "577a508d-d493-431a-b301-5dbabfabdb14",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "me",
+        "edge": "photos",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "caption",
+                "value": "={{ $('Basic LLM Chain').item.json.output.title }}\n\n{{ $('Basic LLM Chain').item.json.output.body }}\n\n{{ $('Basic LLM Chain').item.json.output.source }}\n{{ $('Basic LLM Chain').item.json.output.datetime }}"
+              },
+              {
+                "name": "url",
+                "value": "={{ $('Basic LLM Chain').item.json.output.imageUrl }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        16
+      ],
+      "id": "9d5b8c7b-e0e9-4a50-bf24-2ad68de5fb4f",
+      "name": "Facebook Graph API",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "4kk4pWj75RHac7mW",
+          "name": "Facebook Graph newsFeedPost"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ebd9645c-2682-4586-bfc7-9f8b01fd0654",
+              "leftValue": "={{ $json.output.imageUrl }}",
+              "rightValue": "Approve",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1456,
+        32
+      ],
+      "id": "672fad0d-5f7e-4bed-a310-f87a2292f56a",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "me",
+        "edge": "feed",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "message",
+                "value": "={{ $('Basic LLM Chain').item.json.output.title }}\n\n{{ $('Basic LLM Chain').item.json.output.body }}\n\n{{ $('Basic LLM Chain').item.json.output.source }}\n{{ $('Basic LLM Chain').item.json.output.datetime }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        192
+      ],
+      "id": "a0cf2c1b-785d-46e8-b6d4-db42d764b190",
+      "name": "Facebook Graph API1",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "4kk4pWj75RHac7mW",
+          "name": "Facebook Graph newsFeedPost"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://magazine.sebastianraschka.com/feed"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        416,
+        -96
+      ],
+      "id": "e0230c04-b20d-432e-af9c-50b8ca96d811",
+      "name": "RSS Feed Trigger"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {}
+      },
+      "id": "4a9c816a-9ca1-4c9e-a892-954d5024b3ee",
+      "name": "RSS Feed Read",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        1040,
+        752
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      url: 'https://medium.com/feed/n8n-io',\n    }\n  },\n  {\n    json: {\n      url: 'https://dev.to/feed/n8n',\n    }\n  }\n];"
+      },
+      "id": "1bb51476-1503-4718-b901-527eb49c915c",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        624,
+        672
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "38531dd9-d5bc-4f69-a803-67ac47ffe7af",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "position": [
+        848,
+        672
+      ],
+      "typeVersion": 3
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://embeddeddesignblog.blogspot.com/feeds/posts/default"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        416,
+        64
+      ],
+      "id": "fe316bae-eb49-46ab-a0d4-1524aff20002",
+      "name": "RSS Feed Trigger1"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "feedUrl": "https://www.cnx-software.com/feed/"
+      },
+      "type": "n8n-nodes-base.rssFeedReadTrigger",
+      "typeVersion": 1,
+      "position": [
+        416,
+        208
+      ],
+      "id": "6f9bf36b-b88e-48f3-a5fa-7f2ceec46c00",
+      "name": "RSS Feed Trigger2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook Graph API": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Facebook Graph API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Facebook Graph API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Feed Trigger": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Feed Read": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "RSS Feed Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Feed Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Feed Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9c8d4ec6-af8b-44f9-baf5-e49a7e2596bd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5c1488d671ebdf21efe1b8d850ccd320c7b411c7d1735cf887991d1f2bda941"
+  },
+  "id": "pgryzX2a3fnuCuXC",
+  "tags": []
+}
