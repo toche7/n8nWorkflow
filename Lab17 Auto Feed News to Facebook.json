@@ -6,23 +6,24 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        416,
-        672
+        -432,
+        848
       ],
-      "id": "eb4e147c-0fbe-4281-80d7-de43022b4d9e",
+      "id": "ca783d7a-c30e-490f-b9d6-fd09a7be493a",
       "name": "When clicking ‘Execute workflow’"
     },
     {
       "parameters": {
+        "maxItems": 2,
         "keep": "lastItems"
       },
       "type": "n8n-nodes-base.limit",
       "typeVersion": 1,
       "position": [
-        800,
-        32
+        96,
+        352
       ],
-      "id": "05774931-7d0c-45ee-9d8c-a9d52d5b9994",
+      "id": "9475721b-df76-48fa-8c37-129e5d74e0ea",
       "name": "Limit"
     },
     {
@@ -42,10 +43,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        1056,
-        32
+        352,
+        352
       ],
-      "id": "e83e8fe4-ab15-4f46-8d58-bf04980019c7",
+      "id": "e96a0888-9a1b-49c8-ab68-a45d1d1b45f8",
       "name": "Basic LLM Chain"
     },
     {
@@ -56,15 +57,15 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        1040,
-        240
+        352,
+        560
       ],
-      "id": "e40ecd7a-500d-4873-b3ce-8712ea8cb271",
+      "id": "31b92de7-a913-4fa7-9829-139673988fa6",
       "name": "Groq Chat Model",
       "credentials": {
         "groqApi": {
-          "id": "2yzrpEEQIaQeHBWu",
-          "name": "Groq account 2"
+          "id": "I9bEy1a5eA5PYwrD",
+          "name": "Groq account"
         }
       }
     },
@@ -76,10 +77,10 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        1184,
-        240
+        496,
+        560
       ],
-      "id": "577a508d-d493-431a-b301-5dbabfabdb14",
+      "id": "495842eb-e4b8-4348-8248-084e8bfdf083",
       "name": "Structured Output Parser"
     },
     {
@@ -106,15 +107,15 @@
       "type": "n8n-nodes-base.facebookGraphApi",
       "typeVersion": 1,
       "position": [
-        1648,
-        16
+        1616,
+        272
       ],
-      "id": "9d5b8c7b-e0e9-4a50-bf24-2ad68de5fb4f",
+      "id": "e068d9be-37dc-4639-a046-9e0ff31b417f",
       "name": "Facebook Graph API",
       "credentials": {
         "facebookGraphApi": {
-          "id": "4kk4pWj75RHac7mW",
-          "name": "Facebook Graph newsFeedPost"
+          "id": "S31fSuGn6aAYaYpr",
+          "name": "Facebook Graph NamwaLab"
         }
       }
     },
@@ -146,10 +147,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1456,
-        32
+        672,
+        352
       ],
-      "id": "672fad0d-5f7e-4bed-a310-f87a2292f56a",
+      "id": "86cd3a1a-803c-4aa9-a33e-610d91dd9d52",
       "name": "If"
     },
     {
@@ -172,26 +173,23 @@
       "type": "n8n-nodes-base.facebookGraphApi",
       "typeVersion": 1,
       "position": [
-        1648,
-        192
+        880,
+        512
       ],
-      "id": "a0cf2c1b-785d-46e8-b6d4-db42d764b190",
+      "id": "68ec6f65-ff92-420b-adbb-7c89e94d3d7b",
       "name": "Facebook Graph API1",
       "credentials": {
         "facebookGraphApi": {
-          "id": "4kk4pWj75RHac7mW",
-          "name": "Facebook Graph newsFeedPost"
+          "id": "S31fSuGn6aAYaYpr",
+          "name": "Facebook Graph NamwaLab"
         }
-      },
-      "disabled": true
+      }
     },
     {
       "parameters": {
         "pollTimes": {
           "item": [
-            {
-              "mode": "everyMinute"
-            }
+            {}
           ]
         },
         "feedUrl": "https://magazine.sebastianraschka.com/feed"
@@ -199,10 +197,10 @@
       "type": "n8n-nodes-base.rssFeedReadTrigger",
       "typeVersion": 1,
       "position": [
-        416,
-        -96
+        -384,
+        208
       ],
-      "id": "e0230c04-b20d-432e-af9c-50b8ca96d811",
+      "id": "1a2d85ff-4217-49e3-a407-649058270ebc",
       "name": "RSS Feed Trigger"
     },
     {
@@ -210,12 +208,12 @@
         "url": "={{ $json.url }}",
         "options": {}
       },
-      "id": "4a9c816a-9ca1-4c9e-a892-954d5024b3ee",
+      "id": "567e92ed-49e2-409c-b8ec-d7a102466f8c",
       "name": "RSS Feed Read",
       "type": "n8n-nodes-base.rssFeedRead",
       "position": [
-        1040,
-        752
+        176,
+        864
       ],
       "typeVersion": 1
     },
@@ -223,12 +221,12 @@
       "parameters": {
         "jsCode": "return [\n  {\n    json: {\n      url: 'https://medium.com/feed/n8n-io',\n    }\n  },\n  {\n    json: {\n      url: 'https://dev.to/feed/n8n',\n    }\n  }\n];"
       },
-      "id": "1bb51476-1503-4718-b901-527eb49c915c",
+      "id": "4f9d026d-217a-4d62-9405-19cb284b0b92",
       "name": "Code",
       "type": "n8n-nodes-base.code",
       "position": [
-        624,
-        672
+        -256,
+        848
       ],
       "typeVersion": 1
     },
@@ -236,12 +234,12 @@
       "parameters": {
         "options": {}
       },
-      "id": "38531dd9-d5bc-4f69-a803-67ac47ffe7af",
+      "id": "65121ed5-c199-4aae-b02f-4ab3f9914e0d",
       "name": "Loop Over Items",
       "type": "n8n-nodes-base.splitInBatches",
       "position": [
-        848,
-        672
+        -80,
+        848
       ],
       "typeVersion": 3
     },
@@ -250,7 +248,8 @@
         "pollTimes": {
           "item": [
             {
-              "mode": "everyMinute"
+              "mode": "everyHour",
+              "minute": 20
             }
           ]
         },
@@ -259,10 +258,10 @@
       "type": "n8n-nodes-base.rssFeedReadTrigger",
       "typeVersion": 1,
       "position": [
-        416,
-        64
+        -384,
+        352
       ],
-      "id": "fe316bae-eb49-46ab-a0d4-1524aff20002",
+      "id": "62467b79-dc70-4162-88d6-0ce6fe319f43",
       "name": "RSS Feed Trigger1"
     },
     {
@@ -270,7 +269,8 @@
         "pollTimes": {
           "item": [
             {
-              "mode": "everyMinute"
+              "mode": "everyHour",
+              "minute": 40
             }
           ]
         },
@@ -279,11 +279,98 @@
       "type": "n8n-nodes-base.rssFeedReadTrigger",
       "typeVersion": 1,
       "position": [
-        416,
-        208
+        -384,
+        512
       ],
-      "id": "6f9bf36b-b88e-48f3-a5fa-7f2ceec46c00",
+      "id": "0cd08fda-d26c-4f58-b2e6-2f39a47a84e6",
       "name": "RSS Feed Trigger2"
+    },
+    {
+      "parameters": {
+        "maxItems": 2,
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        112,
+        640
+      ],
+      "id": "6d5e373c-8d65-45cf-a1fb-0ec5fe628a55",
+      "name": "Limit1"
+    },
+    {
+      "parameters": {
+        "method": "HEAD",
+        "url": "={{ $json.output.imageUrl }}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        944,
+        288
+      ],
+      "id": "cd40e089-fdb7-4cb7-98a1-e74d9512ec5c",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const status = item.json.statusCode;\n  const ct = item.json.headers?.['content-type'] || '';\n  return {\n    json: {\n      url: item.json.request?.url || item.json.url || item.json.imageUrl,\n      statusCode: status,\n      contentType: ct,\n      exists: status >= 200 && status < 400 && ct.startsWith('image/')\n    }\n  };\n});\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        288
+      ],
+      "id": "aa328fab-7d61-49d4-b291-86582a0176be",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ebd9645c-2682-4586-bfc7-9f8b01fd0654",
+              "leftValue": "={{ $json.exists }}",
+              "rightValue": "Approve",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1360,
+        288
+      ],
+      "id": "eab190e7-c2d3-404c-9160-00563c920268",
+      "name": "If1"
     }
   ],
   "pinData": {},
@@ -343,16 +430,11 @@
         ]
       ]
     },
-    "Facebook Graph API": {
-      "main": [
-        []
-      ]
-    },
     "If": {
       "main": [
         [
           {
-            "node": "Facebook Graph API",
+            "node": "HTTP Request",
             "type": "main",
             "index": 0
           }
@@ -401,7 +483,13 @@
     },
     "Loop Over Items": {
       "main": [
-        [],
+        [
+          {
+            "node": "Limit1",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "RSS Feed Read",
@@ -432,17 +520,67 @@
           }
         ]
       ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Facebook Graph API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Limit1": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook Graph API": {
+      "main": [
+        []
+      ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "9c8d4ec6-af8b-44f9-baf5-e49a7e2596bd",
+  "versionId": "eb167fd4-efdb-4f5e-8046-60f9ac62b13d",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "e5c1488d671ebdf21efe1b8d850ccd320c7b411c7d1735cf887991d1f2bda941"
+    "instanceId": "d9921d63feee5986466248a863626985dca652e20d2fe2f0796d6fd95752678d"
   },
-  "id": "pgryzX2a3fnuCuXC",
+  "id": "H54VBn5TkaQ3Grbp",
   "tags": []
 }
