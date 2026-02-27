@@ -1,0 +1,503 @@
+{
+  "name": "Lab19SendMarketingEmail",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "425db2f6-31c4-431b-ae3c-7bc30854593c",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "8669edaa-0d93-4c21-a0bb-1af9b441191b",
+              "name": "email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "b5fdd3c0-d7a6-46ae-a43c-f532c0d18c93",
+              "name": "status",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "337d3fd8-599c-4691-93c9-da3ae25d422a",
+              "name": "subscription",
+              "value": "={{ $json.subscription }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -736,
+        224
+      ],
+      "id": "e0099963-2ae5-467f-939a-2a9e109f9e58",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "31d9aa6f-7b82-4d67-b210-a2951fd1121e",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "65961799-2946-4e6e-b56b-dadd1ae148b3",
+              "leftValue": "={{ $json.subscription }}",
+              "rightValue": "yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "fe626ba1-fca4-4e5b-ad52-5f0df86f25ec",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -576,
+        224
+      ],
+      "id": "5a9b5991-5cc2-4f34-8342-a8f8c19a09c4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -976,
+        208
+      ],
+      "id": "387c3ece-ebd6-46d3-8c73-ca3a595ff7a4",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "function randomToken(len = 48) {\n  let s = '';\n  while (s.length < len) s += Math.random().toString(36).slice(2);\n  return s.slice(0, len);\n}\n\n// ฟังก์ชัน format เวลาไทยแบบ วัน/เดือน/ปี เวลา\nfunction formatThaiDateTime(date = new Date()) {\n  return date.toLocaleString('th-TH', {\n    timeZone: 'Asia/Bangkok',\n    day: '2-digit',\n    month: '2-digit',\n    year: 'numeric',\n    hour: '2-digit',\n    minute: '2-digit',\n  });\n}\n\nreturn items.map(item => {\n  item.json.token = randomToken();\n  item.json.token_expires = formatThaiDateTime(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)); // หมดอายุอีก 7 วัน\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        -32
+      ],
+      "id": "c373e52e-29e7-4f79-8a59-7c739dc56db2",
+      "name": "gen token"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        240
+      ],
+      "id": "faca3402-3cd7-4df9-98d7-6f1592c1119c",
+      "name": "Wait",
+      "webhookId": "63d42755-6910-4a08-82ad-61f059575dc4"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1520,
+        208
+      ],
+      "id": "0eadd131-497c-48aa-a1e6-d6ca82e90d28",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        208
+      ],
+      "id": "6763d300-7c14-44dc-9e55-7b9579d10c4f",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "content": "## Email Marketing System\n- ส่งอีเมลแนะนำให้กับลูกค้า\n- ปัจจุบันยังเป็นระบบเขียนอีเมลแบบแมนนวล\n- ตั้งเวลาให้ส่งครั้งละ 40 ฉบับ\n- สามารถกดส่งแบบแมนนวลได้\n- มีระบบให้ผู้รับกด unsubscribe ได้",
+        "height": 176,
+        "width": 528
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        16,
+        480
+      ],
+      "typeVersion": 1,
+      "id": "9efea72b-b469-4125-841e-f56023222d63",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "qHPp5MguJC5cpxNo",
+          "mode": "list",
+          "cachedResultName": "emailMarketing",
+          "cachedResultUrl": "/projects/W0H653XGfzEQxND9/datatables/qHPp5MguJC5cpxNo"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "subscription",
+              "keyValue": "yes"
+            },
+            {
+              "keyName": "status",
+              "keyValue": "yes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1376,
+        208
+      ],
+      "id": "329eba92-0215-4ef5-9cf6-c01164b71202",
+      "name": "Test Data"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ec626fc4-783f-4217-b0c3-a03ffd4efd1a",
+              "name": "status",
+              "value": "sent",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        96,
+        -32
+      ],
+      "id": "ee142a8d-751d-4c9e-b7ee-f13be4b49ed5",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "qHPp5MguJC5cpxNo",
+          "mode": "list",
+          "cachedResultName": "emailMarketing",
+          "cachedResultUrl": "/projects/W0H653XGfzEQxND9/datatables/qHPp5MguJC5cpxNo"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "email",
+              "keyValue": "={{ $('gen token').item.json.email }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "token": "={{ $('gen token').item.json.token }}",
+            "tokenExpires": "={{ $('gen token').item.json.token_expires }}",
+            "subscription": "={{ $json.status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "subscription",
+              "displayName": "subscription",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "tokenExpires",
+              "displayName": "tokenExpires",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "token",
+              "displayName": "token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        320,
+        -32
+      ],
+      "id": "ddb17ba0-a64a-4c5c-9093-8c619e94a548",
+      "name": "Test Data Update"
+    },
+    {
+      "parameters": {
+        "fromEmail": "t.samanchuen@gmail.com",
+        "toEmail": "={{ $json.email}}",
+        "html": "=<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\">\n<head>\n    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"/>\n    <title>การแจ้งเตือน: หลักสูตร AI Agent for ALL</title>\n    <style type=\"text/css\">\n        /* Client-specific Resets */\n        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }\n        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }\n        img { -ms-interpolation-mode: bicubic; }\n\n        /* General Styles */\n        body { margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }\n        table { border-collapse: collapse !important; }\n        \n        /* Responsive */\n        @media screen and (max-width: 600px) {\n            .container { width: 100% !important; }\n            .mobile-padding { padding-left: 20px !important; padding-right: 20px !important; }\n            .mobile-image { width: 100% !important; height: auto !important; }\n            .two-col { width: 100% !important; display: block !important; }\n        }\n    </style>\n</head>\n<body style=\"margin: 0; padding: 0; background-color: #f4f4f4;\">\n\n    <!-- Preheader Text (Hidden) -->\n    <div style=\"display: none; max-height: 0px; overflow: hidden;\">\n        อย่าลืม! การเรียน AI Agent for ALL จะเริ่มแล้ว - รับลิงก์ Zoom ของคุณที่นี่\n    </div>\n\n    <!-- Main Table Container -->\n    <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n        <tr>\n            <td align=\"center\" style=\"padding: 20px 0;\">\n                \n                <!-- Email Wrapper -->\n                <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\" class=\"container\" style=\"background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);\">\n                    \n                    <!-- Header / Logo Area -->\n                    <tr>\n                        <td align=\"center\" style=\"background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px;\">\n                            <h1 style=\"color: #ffffff; margin: 0; font-size: 28px; font-weight: bold; letter-spacing: 0.5px; line-height: 1.3;\">AI Agent for ALL</h1>\n                            <p style=\"color: #ffffff; margin: 15px 0 0 0; font-size: 18px; font-weight: 500;\">การแจ้งเตือนการเข้าเรียน</p>\n                        </td>\n                    </tr>\n\n                    <!-- Important Notice Banner -->\n                    <tr>\n                        <td align=\"center\" style=\"background-color: #fff3cd; padding: 20px; border-bottom: 3px solid #ffc107;\">\n                            <p style=\"color: #856404; font-size: 16px; margin: 0; font-weight: bold;\">\n                                ⏰ การเรียนจะเริ่มในไม่ช้า! กรุณาเตรียมพร้อม\n                            </p>\n                        </td>\n                    </tr>\n\n                    <!-- Greeting Section -->\n                    <tr>\n                        <td class=\"mobile-padding\" style=\"padding: 40px 40px 20px 40px;\">\n                            <h2 style=\"color: #333333; font-size: 22px; margin-top: 0; margin-bottom: 20px;\">สวัสดีผู้เข้าอบรม</h2>\n                            <p style=\"color: #666666; font-size: 16px; line-height: 26px; margin-bottom: 20px;\">\n                                ขอบคุณที่ลงทะเบียนเรียนหลักสูตร <strong>AI Agent for ALL</strong> กับเรา! เราตื่นเต้นที่จะได้พบคุณในห้องเรียน\n                            </p>\n                            <p style=\"color: #666666; font-size: 16px; line-height: 26px; margin-bottom: 20px;\">\n                                นี่คือข้อมูลสำคัญสำหรับการเข้าเรียนของคุณ:\n                            </p>\n                        </td>\n                    </tr>\n\n                    <!-- Course Details Box -->\n                    <tr>\n                        <td style=\"padding: 0 40px 30px 40px;\" class=\"mobile-padding\">\n                            <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%); border-radius: 10px; border: 2px solid #667eea;\">\n                                <tr>\n                                    <td style=\"padding: 30px;\">\n                                        <h3 style=\"color: #667eea; font-size: 20px; margin: 0 0 20px 0; text-align: center;\">📋 รายละเอียดการเข้าเรียน</h3>\n                                        \n                                        <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n                                            <tr>\n                                                <td style=\"padding: 10px 0;\">\n                                                    <p style=\"color: #333333; font-size: 16px; margin: 0;\">\n                                                        <strong style=\"color: #667eea;\">📅 วันที่:</strong> วันเสาร์ที่ 7 กุมภาพันธ์ 2569\n                                                    </p>\n                                                </td>\n                                            </tr>\n                                            <tr>\n                                                <td style=\"padding: 10px 0;\">\n                                                    <p style=\"color: #333333; font-size: 16px; margin: 0;\">\n                                                        <strong style=\"color: #667eea;\">🕐 เวลา:</strong> 13:00 - 16:00 น.\n                                                    </p>\n                                                </td>\n                                            </tr>\n                                            <tr>\n                                                <td style=\"padding: 10px 0;\">\n                                                    <p style=\"color: #333333; font-size: 16px; margin: 0;\">\n                                                        <strong style=\"color: #667eea;\">👨‍🏫 วิทยากร:</strong> ผศ.ดร. ทวีศักดิ์ สมานชื่น\n                                                    </p>\n                                                </td>\n                                            </tr>\n                                            <tr>\n                                                <td style=\"padding: 10px 0;\">\n                                                    <p style=\"color: #333333; font-size: 16px; margin: 0;\">\n                                                        <strong style=\"color: #667eea;\">💻 รูปแบบ:</strong> เรียนออนไลน์ผ่าน Zoom\n                                                    </p>\n                                                </td>\n                                            </tr>\n                                        </table>\n                                    </td>\n                                </tr>\n                            </table>\n                        </td>\n                    </tr>\n\n                    <!-- Zoom Link Section (Highlighted) -->\n                    <tr>\n                        <td style=\"padding: 0 40px 30px 40px;\" class=\"mobile-padding\">\n                            <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"background-color: #e8f4ff; border-radius: 10px; border-left: 5px solid #0066cc;\">\n                                <tr>\n                                    <td style=\"padding: 25px;\">\n                                        <h3 style=\"color: #0066cc; font-size: 18px; margin: 0 0 15px 0;\">🎥 ลิงก์ Zoom Meeting ของคุณ</h3>\n                                        <p style=\"color: #333333; font-size: 15px; line-height: 24px; margin: 0 0 15px 0;\">\n                                            กรุณาคลิกปุ่มด้านล่างเพื่อเข้าห้องเรียน หรือคัดลอก Meeting ID และ Passcode:\n                                        </p>\n                                        <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n                                            <tr>\n                                                <td style=\"padding: 15px 0;\">\n                                                    <p style=\"color: #555555; font-size: 14px; margin: 0 0 8px 0;\">\n                                                        <strong>Meeting ID:</strong> <span style=\"background-color: #ffffff; padding: 5px 10px; border-radius: 4px; font-family: 'Courier New', monospace;\">680 9810 8073</span>\n                                                    </p>\n                                                    <p style=\"color: #555555; font-size: 14px; margin: 0;\">\n                                                        <strong>Passcode:</strong> <span style=\"background-color: #ffffff; padding: 5px 10px; border-radius: 4px; font-family: 'Courier New', monospace;\">083696</span>\n                                                    </p>\n                                                </td>\n                                            </tr>\n                                        </table>\n                                    </td>\n                                </tr>\n                            </table>\n                        </td>\n                    </tr>\n\n                    <!-- Zoom CTA Button -->\n                    <tr>\n                        <td align=\"center\" style=\"padding: 0 40px 40px 40px;\" class=\"mobile-padding\">\n                            <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\">\n                                <tr>\n                                    <td align=\"center\" style=\"background-color: #0066cc; border-radius: 50px; box-shadow: 0 6px 12px rgba(0, 102, 204, 0.4);\">\n                                        <a href=\"https://thairen.zoom.us/j/68098108073?pwd=8SsXLyulaR3s5F1XG3EijDKwxIta1a.1\" style=\"display: inline-block; padding: 18px 50px; color: #ffffff; font-size: 18px; font-weight: bold; text-decoration: none; border-radius: 50px;\">\n                                            🎥 เข้าร่วม Zoom Meeting\n                                        </a>\n                                    </td>\n                                </tr>\n                            </table>\n                            <p style=\"color: #888888; font-size: 13px; margin: 15px 0 0 0; font-style: italic;\">\n                                *แนะนำให้เข้าห้องก่อนเวลาเรียน 10-15 นาทีเพื่อทดสอบอุปกรณ์\n                            </p>\n                        </td>\n                    </tr>\n\n                    <!-- What to Prepare -->\n                    <tr>\n                        <td style=\"padding: 0 40px 30px 40px;\" class=\"mobile-padding\">\n                            <h3 style=\"color: #667eea; font-size: 20px; margin: 0 0 20px 0; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px;\">📦 สิ่งที่ต้องเตรียม</h3>\n                            <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n                                <tr>\n                                    <td valign=\"top\" style=\"padding-top: 5px;\">\n                                        <ul style=\"color: #666666; font-size: 15px; line-height: 26px; margin: 0; padding-left: 20px;\">\n                                            <li style=\"margin-bottom: 10px;\">💻 คอมพิวเตอร์หรือ Laptop พร้อมการเชื่อมต่ออินเทอร์เน็ตที่เสถียร</li>\n                                            <li style=\"margin-bottom: 10px;\">🎧 หูฟังและไมโครโฟน (แนะนำสำหรับการสื่อสารที่ชัดเจน)</li>\n                                            <li style=\"margin-bottom: 10px;\">📝 สมุดจดบันทึกสำหรับจดโน้ตสำคัญ</li>\n                                            <li style=\"margin-bottom: 10px;\">☕ เครื่องดื่มและขนมเล็กน้อยเพื่อเติมพลังระหว่างเรียน</li>\n                                            <li style=\"margin-bottom: 10px;\">💡 ติดตั้ง Zoom Application ล่วงหน้า (แนะนำ)</li>\n                                        </ul>\n                                    </td>\n                                </tr>\n                            </table>\n                        </td>\n                    </tr>\n\n                    <!-- Course Highlights -->\n                    <tr>\n                        <td style=\"padding: 0 40px 30px 40px;\" class=\"mobile-padding\">\n                            <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"background-color: #f9f9f9; border-radius: 8px;\">\n                                <tr>\n                                    <td style=\"padding: 25px;\">\n                                        <h3 style=\"color: #667eea; font-size: 18px; margin-top: 0; margin-bottom: 15px;\">✨ ไฮไลท์ของหลักสูตร</h3>\n                                        <p style=\"color: #444444; font-size: 14px; line-height: 22px; margin: 0;\">\n                                            <strong>• Hands-on Learning:</strong> เรียนแบบลงมือทำจริง ไม่เน้นทฤษฎีเพียงอย่างเดียว<br>\n                                            <strong>• Real-world Applications:</strong> นำไปใช้ได้จริงในชีวิตและธุรกิจ<br>\n                                            <strong>• AI Agent Development:</strong> สร้าง AI ที่ทำงานแทนคุณได้อัตโนมัติเบื้องต้น<br>\n                                            <strong>• Live Q&A:</strong> ถามตอบแบบเรียลไทม์กับวิทยากรผู้เชี่ยวชาญ<br>\n                                            <strong>• Certificate:</strong>จะแจ้งให้ทราบในการอบรม<br>\n                                        </p>\n                                    </td>\n                                </tr>\n                            </table>\n                        </td>\n                    </tr>\n\n                    <!-- Support Section -->\n                    <tr>\n                        <td style=\"padding: 0 40px 30px 40px;\" class=\"mobile-padding\">\n                            <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\" style=\"border: 1px solid #e0e0e0; border-radius: 8px;\">\n                                <tr>\n                                    <td style=\"padding: 20px; background-color: #fafafa; border-radius: 8px;\">\n                                        <h4 style=\"color: #333333; font-size: 16px; margin: 0 0 10px 0;\">💬 ต้องการความช่วยเหลือ?</h4>\n                                        <p style=\"color: #666666; font-size: 14px; line-height: 22px; margin: 0;\">\n                                            หากคุณมีคำถามหรือปัญหาเกี่ยวกับการเข้าเรียน กรุณาติดต่อทีมงานของเราได้ที่:<br>\n                                            📧 Email: <a href=\"mailto:cbtumu.net@gmail.com\" style=\"color: #667eea; text-decoration: none;\">cbtumu.net@gmail.com</a><br>\n                                            ☎️ Tel: 099 629 8236, 086 945 3895 \n                                            <br>\n\n                                        </p>\n                                    </td>\n                                </tr>\n                            </table>\n                        </td>\n                    </tr>\n\n\n\n                    <!-- Footer -->\n                    <tr>\n                        <td align=\"center\" style=\"padding: 30px 20px; background-color: #333333;\">\n                            <p style=\"color: #ffffff; font-size: 14px; margin: 0 0 15px 0;\">\n                                <strong>ติดต่อสอบถามเพิ่มเติม</strong>\n                            </p>\n                            <p style=\"margin: 0 0 20px 0;\">\n                                <a href=\"https://www.facebook.com/CBTUMU\" style=\"color: #bbbbbb; text-decoration: none; margin: 0 10px;\">Facebook</a>\n                                <a href=\"https://cbtumu.net\" style=\"color: #bbbbbb; text-decoration: none; margin: 0 10px;\">Website</a>\n                                <a href=\"https://www.youtube.com/@CBTU-MU\" style=\"color: #bbbbbb; text-decoration: none; margin: 0 10px;\">YouTube</a>\n                            </p>\n                            <p style=\"color: #888888; font-size: 12px; line-height: 18px; margin: 0;\">\n                                คุณได้รับอีเมลนี้เพราะคุณได้ลงทะเบียนเรียนหลักสูตร AI Agent for ALL<br>\n                                <a href=\"https://primary-production-db86.up.railway.app/webhook/update-status?t={{ $json.token }}\" style=\"color: #888888;\">ยกเลิกการรับอีเมล</a>\n                            </p>\n                        </td>\n                    </tr>\n\n                </table>\n                <!-- End Email Wrapper -->\n\n            </td>\n        </tr>\n    </table>\n\n</body>\n</html>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -144,
+        -32
+      ],
+      "id": "d7ef51c1-026e-4e63-9744-c9d4319eb697",
+      "name": "Send an Email",
+      "webhookId": "9668dcf0-eb4a-4eeb-800e-807170badc28",
+      "credentials": {
+        "smtp": {
+          "id": "tFejXtCziRAmR7bD",
+          "name": "SMTP account t.samanchuen"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "gen token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gen token": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Test Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Data": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Test Data Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Data Update": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send an Email": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7e931ed9-3e83-4226-a528-e1115455bbce",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bf14b54b99f77de3ec77e234914c2f510eb1e693b1963bb72bcb1fb693784299"
+  },
+  "id": "dHMYh7PXrnfnMCyG",
+  "tags": []
+}
